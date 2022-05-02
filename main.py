@@ -5,6 +5,7 @@ import numpy as np
 from mpl_toolkits.basemap import Basemap
 from itertools import chain
 import re
+import coordinate_mapping
 
 months_axis = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
 
@@ -120,8 +121,9 @@ if __name__ == "__main__":
             deg, minutes, direction = re.split('[°\']', meta_info[4])
             lon_dec = (float(deg) + float(minutes)  / 60) * (-1 if direction in ['W', 'S'] else 1)
 
-            coords.append([lat_dec,lon_dec])
-            print(lat_dec, lon_dec)
+            coords.append([lat_dec,lon_dec, filename])
 
             fig.tight_layout()
             plt.show()
+
+    coordinate_mapping.plot(coords)
