@@ -1,6 +1,10 @@
 import math
 import matplotlib.pyplot as plt
 import os.path
+import numpy as np
+from mpl_toolkits.basemap import Basemap
+from itertools import chain
+import re
 
 months_axis = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
 
@@ -16,6 +20,25 @@ def value_generator(period, trig_function, months):
         cur_vals.append(month * trig_function(math.radians(period * t)))
         t += 1
     return 2 * sum(cur_vals) / len(cur_vals)
+
+
+def draw_map(m, scale=0.2):
+    # draw a shaded-relief image
+    m.shadedrelief(scale=scale)
+
+    # lats and longs are returned as a dictionary
+    lats = m.drawparallels(np.linspace(-90, 90, 13))
+    lons = m.drawmeridians(np.linspace(-180, 180, 13))
+
+    # keys contain the plt.Line2D instances
+    lat_lines = chain(*(tup[1][0] for tup in lats.items()))
+    lon_lines = chain(*(tup[1][0] for tup in lons.items()))
+    all_lines = chain(lat_lines, lon_lines)
+
+    # cycle through these lines and set the desired style
+    for line in all_lines:
+        line.set(linestyle='-', alpha=0.3, color='w')
+    plt.show()
 
 
 def shift_terms(a1, b1, a2, b2):
@@ -47,9 +70,17 @@ def f_shifted(A0, A1, e1, A2, e2):
 
 
 if __name__ == "__main__":
+
+    fig = plt.figure(figsize=(8, 8))
+    m = Basemap(projection='lcc', resolution=None,
+                lon_0=0, lat_0=50, lat_1=45, lat_2=55,
+                width=1.6E7, height=1.2E7)
+
+    coords = []
+
     for dirpath, dirnames, filenames in os.walk("./data"):
         for filename in [f for f in filenames if f.endswith(".txt")]:
-            file = open(os.path.join(dirpath, filename), "r")
+            file = open(os.path.join(dirpath, filename), "r", encoding="utf-8")
 
             print(filename)
 
@@ -82,6 +113,15 @@ if __name__ == "__main__":
             fig.suptitle(meta_info[1] + " to " + meta_info[2] + " " + meta_info[5] + " " + meta_info[3] + " " + meta_info[4])
             axes[1].set_title("Shifted")
             axes[0].set_title("Original")
+
+            deg, minutes, direction = re.split('[°\']', meta_info[3])
+            lat_dec = (float(deg) + float(minutes)  / 60) * (-1 if direction in ['W', 'S'] else 1)
+
+            deg, minutes, direction = re.split('[°\']', meta_info[4])
+            lon_dec = (float(deg) + float(minutes)  / 60) * (-1 if direction in ['W', 'S'] else 1)
+
+            coords.append([lat_dec,lon_dec])
+            print(lat_dec, lon_dec)
 
             fig.tight_layout()
             plt.show()

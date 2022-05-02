@@ -1,8 +1,8 @@
 Surface Temperature
 Hamburg
 Bergen
-55 60 N
-7 26 E
+55°60'N
+7°26'E
 1907
 4.45
 3.25
